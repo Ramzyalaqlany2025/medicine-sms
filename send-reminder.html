@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>إرسال تذكير بالدواء</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Tahoma, sans-serif; padding: 20px; background-color: #f4f4f4; direction: rtl; }
+    form { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    label { font-weight: bold; display: block; margin-top: 15px; }
+    input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
+    button { margin-top: 20px; background-color: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    .success { color: green; margin-top: 15px; }
+    .error { color: red; margin-top: 15px; }
+  </style>
+</head>
+<body>
+
+  <form id="reminderForm">
+    <h2 style="text-align:center;">📩 إرسال تذكير بالدواء</h2>
+
+    <label for="phone">رقم الجوال (مثال: +9665XXXXXXXX)</label>
+    <input type="tel" id="phone" required placeholder="+9665XXXXXXXX">
+
+    <label for="name">اسم الدواء</label>
+    <input type="text" id="name" required>
+
+    <label for="dosage">الجرعة</label>
+    <input type="text" id="dosage" required>
+
+    <label for="frequency">عدد المرات/اليوم</label>
+    <input type="number" id="frequency" required min="1">
+
+    <label for="duration">مدة الاستخدام</label>
+    <select id="duration" required>
+      <option value="أسبوع">أسبوع</option>
+      <option value="شهر">شهر</option>
+      <option value="3 أشهر">3 أشهر</option>
+      <option value="6 أشهر">6 أشهر</option>
+    </select>
+
+    <button type="submit">إرسال التذكير</button>
+    <p id="response" class="success" style="display:none;"></p>
+    <p id="error" class="error" style="display:none;"></p>
+  </form>
+
+  <script>
+    document.getElementById('reminderForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const phone = document.getElementById('phone').value;
+      const name = document.getElementById('name').value;
+      const dosage = document.getElementById('dosage').value;
+      const frequency = document.getElementById('frequency').value;
+      const duration = document.getElementById('duration').value;
+
+      fetch('http://localhost:3000/send-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, name, dosage, frequency, duration })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          document.getElementById('response').innerText = "✅ تم إرسال الرسالة بنجاح!";
+          document.getElementById('response').style.display = 'block';
+          document.getElementById('error').style.display = 'none';
+        } else {
+          throw new Error(data.error || "حدث خطأ");
+        }
+      })
+      .catch(err => {
+        document.getElementById('error').innerText = "❌ فشل في الإرسال: " + err.message;
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('response').style.display = 'none';
+      });
+    });
+  </script>
+
+</body>
+</html>
